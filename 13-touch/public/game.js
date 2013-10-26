@@ -5,7 +5,8 @@ var sprites = {
     enemy_bee: { sx: 79, sy: 0, w: 37, h: 43, frames: 1 },
     enemy_ship: { sx: 116, sy: 0, w: 42, h: 43, frames: 1 },
     enemy_circle: { sx: 158, sy: 0, w: 32, h: 33, frames: 1 },
-    explosion: { sx: 0, sy: 64, w: 64, h: 64, frames: 12 }
+    explosion: { sx: 0, sy: 64, w: 64, h: 64, frames: 12 },
+    fireball: { sx: 0, sy: 64, w: 64, h: 64, frames: 12 }
 };
 
 var enemies = {
@@ -13,27 +14,27 @@ var enemies = {
     // straight sólo tiene el parámetro E para la velocidad vertical,
     // por lo que se mueve hacia abajo a velocidad constante.
     straight: { x: 0,   y: -50, sprite: 'enemy_ship', health: 10, 
-		E: 100 },
+		E: 125},
 
     //  ltr (left to right) tiene velocidad constante vertical pero
     //  tiene parámetros B y C que le dotan de una velocidad
     //  horizontal sinusoidal suave.
     ltr:      { x: 0,   y: -100, sprite: 'enemy_purple', health: 10, 
-		B: 75, C: 1, E: 100  },
+		B: 125, C: 1, E: 100},
 
     // circle tiene velocidad sinusoidal vx e vy, que junto al
     // parámetro H de desplazamiento en el tiempo le dotan de un
     // movimiento circular.
     circle:   { x: 250,   y: -50, sprite: 'enemy_circle', health: 10, 
-		A: 0,  B: -100, C: 1, E: 20, F: 100, G: 1, H: Math.PI/2 },
+		A: 0,  B: -100, C: 1, E: 55, F: 50, G: 1, H: Math.PI/2 },
 
     //  wiggle y step tienen los mismos parámetros pero con diferentes
     //  magnitudes que les hacen serpentear de manera diferente según
     //  van bajando.
     wiggle:   { x: 100, y: -50, sprite: 'enemy_bee', health: 20, 
-		B: 50, C: 4, E: 100 },
+		B: 50,  C:5, E:100},
     step:     { x: 0,   y: -50, sprite: 'enemy_circle', health: 10,
-		B: 150, C: 1.2, E: 75 }
+		B: 150, C: 3.2, E: 100 }
 };
 
 
@@ -78,17 +79,36 @@ var level1 = [
     [ 22000,    25000, 400,         'wiggle',   { x: 100 } ]
 ];
 
+var level2 = [
+  //  Comienzo, Fin,   Frecuencia,  Tipo,       Override
+    [ 0,        4000,  400,         'step'                 ],
+    [ 6000,     13000, 600,         'ltr'                  ],
+    [ 10000,    16000, 300,         'circle'               ],
+    [ 17800,    20000, 400,         'straight', { x: 50  } ],
+    [ 18200,    20000, 400,         'straight', { x: 90  } ],
+    [ 18200,    20000, 400,         'straight', { x: 10  } ],
+    [ 22000,    25000, 300,         'wiggle',   { x: 150 } ],
+    [ 22000,    25000, 300,         'wiggle',   { x: 100 } ]
+];
+
+var level =  {levels: [level1, level2], now: 0, total: 2};
 
 
 var playGame = function() {
     var board = new GameBoard();
     board.add(new PlayerShip());
 
+	
     // Se un nuevo nivel al tablero de juego, pasando la definición de
     // nivel level1 y la función callback a la que llamar si se ha
     // ganado el juego
-    board.add(new Level(level1, winGame));
+    if (level.now === (level.total-1)) {
+    	board.add(new Level(level.levels[level.now], winGame));
+    } else {
+    	board.add(new Level(level.levels[level.now], newLevel));
+    }
     Game.setBoard(3,board);
+    
 };
 
 // Llamada cuando han desaparecido todos los enemigos del nivel sin
@@ -105,6 +125,13 @@ var winGame = function() {
 var loseGame = function() {
     Game.setBoard(3,new TitleScreen("You lose!", 
                                     "Press fire to play again",
+                                    playGame));
+};
+
+var newLevel = function() {
+	 level.now += 1;
+    Game.setBoard(3,new TitleScreen("Level "+ level.now +" Passed", 
+                                    "Press fire to continue",
                                     playGame));
 };
 
@@ -185,6 +212,9 @@ var Starfield = function(speed,opacity,numStars,clear) {
 // La clase PlayerShip tambien ofrece la interfaz step(), draw() para
 // poder ser dibujada desde el bucle principal del juego
 var PlayerShip = function() { 
+	 var up = false;
+	 var up2 = false;
+	 var up3 = false;
     this.setup('ship', { vx: 0, reloadTime: 0.25, maxVel: 200 });
 
     this.reload = this.reloadTime;
@@ -204,14 +234,39 @@ var PlayerShip = function() {
 	}
 
 	this.reload-=dt;
-	if(Game.keys['fire'] && this.reload < 0) {
+	if(!Game.keys['fire']) up = true;
+	if(!Game.keys['leftFireBall']) up2 = true;
+	if(!Game.keys['rightFireBall']) up3 = true;
+	if(up && Game.keys['fire'] && this.reload < 0) {
+		 up = false;
 	    // Esta pulsada la tecla de disparo y ya ha pasado el tiempo reload
-	    Game.keys['fire'] = false;
+	    //Game.keys['fire'] = false;
+	    
 	    this.reload = this.reloadTime;
 
 	    // Se añaden al gameboard 2 misiles 
 	    this.board.add(new PlayerMissile(this.x,this.y+this.h/2));
 	    this.board.add(new PlayerMissile(this.x+this.w,this.y+this.h/2));
+	}
+	if(up2 && Game.keys['leftFireBall'] && this.reload < 0) {
+		 up2 = false;
+	    // Esta pulsada la tecla de disparo y ya ha pasado el tiempo reload
+	    //Game.keys['leftFireball'] = false;
+	    
+	    this.reload = this.reloadTime;
+
+	    // Se añaden al gameboard 2 misiles 
+	    this.board.add(new FireBall(this.x + this.w/2,this.y+this.h/2,1));
+	}
+	if(up3 && Game.keys['rightFireBall'] && this.reload < 0) {
+		 up3 = false;
+	    // Esta pulsada la tecla de disparo y ya ha pasado el tiempo reload
+	    //Game.keys['leftFireball'] = false;
+	    
+	    this.reload = this.reloadTime;
+
+	    // Se añaden al gameboard 2 misiles 
+	    this.board.add(new FireBall(this.x + this.w/2,this.y+this.h/2,-1));
 	}
     };
 };
@@ -223,7 +278,10 @@ PlayerShip.prototype.type = OBJECT_PLAYER;
 // Llamada cuando una nave enemiga colisiona con la nave del usuario
 PlayerShip.prototype.hit = function(damage) {
     if(this.board.remove(this)) {
-	loseGame();
+	this.board.add(new Explosion(this.x + this.w/2, 
+                                     this.y + this.h/2));
+    
+	setTimeout ('loseGame()', 1000);
     }
 };
 
@@ -252,6 +310,33 @@ PlayerMissile.prototype.step = function(dt)  {
     }
 };
 
+// lado debe ser 1 si se pulsa B y -1 si se pulsa N
+var FireBall = function (x,y, lado){
+	this.setup('fireball', {vx: -100*lado, vy: -850, damage: 100,frame:3})
+	this.x = x - this.w/2; 
+   this.y = y - this.h; 
+
+};
+
+FireBall.prototype = new Sprite();
+FireBall.prototype.type = OBJECT_PLAYER_PROJECTILE;
+
+FireBall.prototype.step = function(dt)  {
+	 this.x += this.vx * dt;
+	 this.y += this.vy * dt;
+	 this.vy += 50;
+	 
+	 var collision = this.board.collide(this,OBJECT_ENEMY);
+    if(collision) {
+	collision.hit(this.damage);
+	
+    } else if(this.y > Game.height || 
+       this.y < -this.h||
+       this.x < -this.w||
+       this.x > Game.width) {
+	this.board.remove(this);
+    }
+};
 
 // Constructor para las naves enemigas. Un enemigo se define mediante
 // un conjunto de propiedades provenientes de 3 sitios distintos, que
@@ -328,6 +413,8 @@ Enemy.prototype.step = function(dt) {
     var collision = this.board.collide(this,OBJECT_PLAYER);
     if(collision) {
 	collision.hit(this.damage);
+	this.board.add(new Explosion(this.x + this.w/2, 
+                                     this.y + this.h/2));
 	this.board.remove(this);
     }
 
