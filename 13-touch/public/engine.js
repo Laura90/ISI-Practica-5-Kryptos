@@ -464,6 +464,26 @@ var TouchControls = function() {
                      y+3*blockWidth/4+5);
     };
 
+	this.drawRectangle = function(ctx,x,y,txt,on) {
+	// Usamos un nivel de opacidad del fondo (globalAlpha)
+	// diferente para que cambie la apariencia del botón en
+	// función de si está presionado (opaco) o no (más
+	// transparente)
+	ctx.globalAlpha = on ? 0.9 : 0.6;
+
+	ctx.fillStyle =  "#CCC";
+	ctx.fillRect(x,y,2*blockWidth,blockWidth);
+
+	ctx.fillStyle = "#FFF";
+	ctx.textAlign = "center";
+	ctx.globalAlpha = 1.0;
+	ctx.font = "bold " + (3*unitWidth/4) + "px arial";
+
+
+	ctx.fillText(txt, 
+                     x+blockWidth,
+                     y+3*blockWidth/4+5);
+    };
 
 
     this.draw = function(ctx) {
@@ -477,12 +497,14 @@ var TouchControls = function() {
 	this.drawSquare(ctx,gutterWidth,yLoc,"\u25C0", Game.keys['left']);
 	this.drawSquare(ctx,unitWidth + gutterWidth,yLoc,"\u25B6", Game.keys['right']);
 	this.drawSquare(ctx,4*unitWidth,yLoc,"A",Game.keys['fire']);
+	this.drawRectangle(ctx,2*unitWidth + gutterWidth,yLoc,"B",Game.keys['leftFireBall'] || Game.keys['rigthFireBall'] );
 
 	// Recupera el estado salvado al principio del método
 	ctx.restore();
     };
 
     this.step = function(dt) { };
+	var eBall = {id: undefined , pos:{x:0,y:0}};
 
     // Manejador para eventos de la pantalla táctil
     this.trackTouch = function(e) {
@@ -496,6 +518,9 @@ var TouchControls = function() {
 	// correspondientes a flecha izquierda y flecha derecha
 	Game.keys['left'] = false;
 	Game.keys['right'] = false;
+	Game.keys["leftFireBall"] = false;
+	Game.keys["rightFireBall"] = false;
+
 
 	for(var i=0;i<e.targetTouches.length;i++) {
 	    // Independientemente de dónde se tocó originalmente, y
@@ -516,6 +541,32 @@ var TouchControls = function() {
 	    if(x > unitWidth && x < 2*unitWidth) {
 		Game.keys['right'] = true;
 	    } 
+		if (e.type == "touchstart") {
+			if (x > 2* unitWidth && x < 4*unitWidth) {
+				eBall.id = touch.identifier;
+				eBall.pos.x = touch.pageX;
+				eBall.pos.y = touch.pageY;
+			};
+		};
+
+
+		if (e.type == "touchmove"){
+			if (eBall.id == touch.identifier){
+				if (touch.pageX < eBall.pos.x && touch.pageY < eBall.pos.y) {
+					Game.keys["leftFireBall"] = true;
+				}else if (touch.pageX > eBall.pos.x && touch.pageY < eBall.pos.y) {
+					Game.keys ["rightFireBall"] = true;
+				};
+			eBall.id = undefined;
+			eBall.pos.x = 0;
+			eBall.pos.y = 0;
+			
+
+			};
+
+		};
+		
+		
 	}
 
 	// Detección de eventos sobre franja de la derecha: disparo
