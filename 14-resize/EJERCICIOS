@@ -1,0 +1,161 @@
+¿Cómo usar este material?:
+
+- Ejecuta el juego finalizado: http://cykod.github.io/AlienInvasion/
+
+- Para poder ejecutar en el móvil este prototipo hay que arrancar el
+  servidor que hemos incluído siguiendo las instrucciones del fichero
+  LEEME que hay en este directorio. El código fuente del prototipo
+  está en el directorio public/
+  
+- Requisitos:
+
+  El objetivo de este prototipo es adaptar la aplicación al móvil de
+  forma que se aproveche al máximo la superficie reducida de la
+  pantalla.
+
+
+
+EJERCICIOS
+
+1. Comprueba el funcionamiento de este prototipo. Para poder ejecutar
+   en el móvil el juego hay que arrancar el servidor que hemos
+   incluído siguiendo las instrucciones del fichero LEEME que hay en
+   este directorio. El código fuente del prototipo está en el
+   directorio public/
+
+
+2. Estudia los cambios que se han realizado en el código para
+   implementar los niveles de juego en este prototipo:
+
+   Configuración del Viewport
+
+   Para impedir que los usuarios hagan zoom in y out en la página se
+   configura un viewport con el elemento <meta> en el HTML. Esta
+   etiqueta la introdujo originalmente Apple en iOS pero hoy día
+   también la utiliza Google Android. En la sección <head> de
+   index.html se ha añadido:
+
+   <meta name="viewport" content="width=device-width, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0"/>
+
+   Esta etiqueta le dice al browser que ponga el ancho de la página al
+   tamaño en pixels del ancho del dispositivo, y que no deje hacer
+   zoom in ni zoom out.
+
+   Sin embargo esto no es suficiente aún para que la aplicación
+   funcione de manera razonable en el móvil. A continuación se explica
+   en pseudocódigo lo que hace el código de Game.setupMobile(), en
+   engine.js
+
+   En el código verás que se comprueba varias veces innerWidth y
+   innerHeight. Esto se hace porque el tamaño de la ventana cambia
+   mientras que se ejecuta el método: una vez que el usuario rota el
+   dispositivo, y después de llamar window.scrollTo para eliminar la
+   barra de dirección.
+
+   También verás en ese método que el tamaño CSS del elemento canvas
+   puede fijarse independientemente de su tamaño en pixels
+   (especificado con los atributos width y height de la etiqueta). Con
+   este truco usamos el mismo número de pixels pero se ven más
+   grande. Se pierde resolución a cambio de mejorar el rendimiento al
+   tener que procesar menos píxeles, pero para un juego como este no
+   es muy importante.
+
+   Ahora sólo falta añadir la llamada a setupMobile() en
+   Game.initialize. Además añadimos los controles táctiles sólo si
+   detectamos que estamos en un dispositivo tactil.
+
+
+   Es necesario realizar un último cambio para poder jugar a pantalla
+   completa en dispositivos iOS. Se añaden las siguientes líneas a
+   index.html:
+
+     <meta name="apple-mobile-web-app-capable" content="yes">
+     <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+   Estando en un dispositivo iOS puedes pulsar en el botón para añadir a
+   tu home screen y funcionará a pantalla completa.
+
+3. En esta ocasión no tienes que hacer nuevos tests. En lugar de eso,
+   repasa todos los tests realizados hasta la fecha y asegúrate de que
+   son independientes. Si no tienes cuidado, puedes introducir
+   dependencias en el código de los test que hagan que algunos de
+   ellos sólo pasen cuando se ejecutan después de haber ejecutado
+   otros anteriormente. 
+
+   Hay varios tests de los que te hemos proporcionado nosotros que
+   sufren este problema. Cuando ejecutas firefox SpecRunner.html pasan
+   todos los tests, hasta los de la clase PlayerShip incluídos. Pero
+   en los siguientes tests hay problemas cuando los ejecutas
+   individualmente (pinchando desde la página generada por
+   SpecRunner.html): 
+
+   1.  Game.singleton
+       ...
+       Game.loop()
+       ...
+
+       Cuando ejecutas individualmente el test Game.loop() (pinchando en
+       Game.loop()) no funciona. Sin embargo sí funciona si se ejecuta
+       junto a los tests anteriores, ya sea con firefox SpecRunner.html o
+       pinchando en Game.singleton
+
+   2.  Clase Starfield
+         draw + step + draw
+      
+       Este test tampoco pasa cuando se pulsa sobre él      
+
+   3.  Clase PlayerShip
+         draw
+         step sin teclas pulsadas
+         step con tecla left pulsada
+
+       Ninguno de estos 3 tests funcionan, ni separados (pincha en
+       cada uno de ellos), ni juntos (pincha en Clase PlayerShip).
+
+   Cada test debe ser independiente: si necesita objetos dummy/dobles,
+   debe crearlos y no utilizar los creados por otros tests que le
+   precedan. Si crea objetos dobles/dummies que modifiquen algún
+   objeto global como Game o SpriteSheet, del que puedan depender
+   otros tests, debe devolver al terminar el estado original de dichos
+   objetos. Para ello puedes utilizar las funciones beforeEach() y
+   afterEach() dentro de cada suite de tests describe, para que: 
+
+     1. En beforeEach() se guarde el estado de variables como Game o
+        SpriteSheet si en alguno de los tests se van a modificar para
+        crear objetos dummy/dobles para ellas.
+
+     2. En afterEach() se recupere el estado de variables como Game o
+        SpriteSheet si en alguno de los tests de la suite del describe
+        en el que se ha definido afterEach() se han modificado
+        variables como Game o SpriteSheet. 
+
+   Veamos un ejemplo:
+
+     describe("Ejemplo", function(){
+       beforeEach(){
+         // nos guardamos una referencia a Game por si algún it() luego 
+         // modifica Game, como  hace por ejemplo "test 1"
+
+         GameOrig = Game; 
+
+       };
+       afterEach(){
+         // Tras cada it() se llama automáticamente a afterEach(), que vuelve a 
+         // dejar Game apuntando al objeto original
+         Game = GameOrig;
+       }
+
+       it ("test 1", function(){
+         // Este test crea un dummy para Game:
+         Game = { ... el código del dummy ... };
+       });
+
+       it ("test 2", function(){
+         // Este test necesita el Game original. Y lo tiene disponible en Game,
+         // porque al acabar el anterior it se llama a afterEach() 
+         // automáticamente, y ahí se recupera el Game original
+         ...
+       });
+     }); // fin de la suite describe("Ejemplo"...
+
+   

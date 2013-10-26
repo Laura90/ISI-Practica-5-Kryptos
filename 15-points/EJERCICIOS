@@ -1,0 +1,66 @@
+¿Cómo usar este material?:
+
+- Ejecuta el juego finalizado: http://cykod.github.io/AlienInvasion/
+
+- Ejecuta el prototipo. Para poder ejecutar en el móvil este prototipo
+  hay que arrancar el servidor que hemos incluído siguiendo las
+  instrucciones del fichero LEEME que hay en este directorio. El
+  código fuente del prototipo está en el directorio public/
+  
+- A continuación exponemos los requisitos y la especificación de este
+  prototipo.
+
+- A continuación exponemos los requisitos y la especificación de este
+  prototipo.
+
+  Requisitos:
+
+  El objetivo de este prototipo es tener un marcador de puntos para
+  cada partida.
+
+  Especificación
+
+  Se añadirá un nuevo tablero para la puntuación. 
+
+
+
+EJERCICIOS
+
+1. Comprueba el funcionamiento de este prototipo. Para poder ejecutar
+   en el móvil el juego hay que arrancar el servidor que hemos
+   incluído siguiendo las instrucciones del fichero LEEME que hay en
+   este directorio. El código fuente del prototipo está en el
+   directorio public/
+
+
+2. Estudia los cambios que se han realizado en el código para
+   implementar los niveles de juego en este prototipo:
+
+   Se ha implementado el constructor GamePoints() en engine.js
+
+   La puntuación se almacena en Game.points.
+
+   Cada vez que se crea un nuevo objeto GamePoints el juego asume que
+   comienza un nuevo juego y reinicializa la puntuación de Game.points
+   a cero.
+
+   Cada vez que se llama al método step del objeto creado con
+   GamePoints, el juego obtiene la puntuación actual y rellena por la
+   izquierda con ceros para que siempre tenga pointsLength dígitos de
+   longitud. Después llama a fillText() para mostrar los puntos en la
+   pantalla.
+
+   Se añade como capa 5 el tablero GamePoints en playGame(), en
+   game.js. Será el último tablero que se dibuje, encima de todos los
+   demás: la posición 4 es la de los botones para la pantalla táctil.
+
+   En el método hit() de los enemigos hacemos que se incremente el
+   número de puntos cada vez que un misil alcanza a un enemigo. Si el
+   enemigo no tiene propiedad de puntos, el defecto es 100.
+
+3. Asegúrate de que la bola de fuego actualiza los puntos cada vez que
+   colisiona con un enemigo.
+
+4. Crea en un fichero PuntuacionSpec.js pruebas unitarias y de
+   integración que comprueben el correcto funcionamiento del sistema
+   de puntuación.
