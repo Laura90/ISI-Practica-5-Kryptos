@@ -19,45 +19,30 @@ var Game = new function() {
     // Inicializa el juego
     this.initialize = function(canvasElementId,sprite_data,callback) {
 	this.canvas = document.getElementById(canvasElementId);
-
-	// Desplazamiento de la nave del jugador para que aparezca
-	// encima de los botones táctiles
-	this.playerOffset = 10;
-
-	// En pantallas táctiles grandes haremos que el tamaño de la
-	// ventana sea el doble del tamaño del canvas en pixels, para
-	// mejorar así el rendimiento al tener que procesar menos
-	// pixels.  En estas pantallas grandes esta propiedad será
-	// 2. Se determina en this.setupMobile() Cuando se hagan
-	// cálculos de eventos de toque hay que tener en cuenta este
-	// factor multiplicador
-	this.canvasMultiplier= 1;
-
-	// Configuración para móviles
-	this.setupMobile();
-
 	this.width = this.canvas.width;
 	this.height= this.canvas.height;
 
 	this.ctx = this.canvas.getContext && this.canvas.getContext('2d');
 	if(!this.ctx) { return alert("Please upgrade your browser to play"); }
 
+	// Propiedades para pantallas táctiles
+	this.canvasMultiplier = 1;
+	this.playerOffset = 10;
+
 	this.setupInput();
+
+	// Añadimos como un nuevo tablero al juego el panel con los
+	// botones para pantalla táctil
+	this.setBoard(4,new TouchControls());
 
 	this.loop(); 
 
-	// Añadimos como un nuevo tablero al juego el panel con los
-	// botones para pantalla táctil, sólo si hemos detectado pantalla móvil
-	if(this.mobile) {
-	    this.setBoard(4,new TouchControls());
-	}
 
 	SpriteSheet.load(sprite_data,callback);
     };
-    
 
     // Gestión de la entrada (teclas para izda/derecha y disparo)
-    var KEY_CODES = { 37:'left', 39:'right', 32 :'fire' };
+    var KEY_CODES = { 37:'left', 39:'right', 32 :'fire', 66:'leftFireBall', 78:'rightFireBall' };
     this.keys = {};
 
     this.setupInput = function() {
@@ -76,7 +61,6 @@ var Game = new function() {
 	});
 	
     }
-
 
     // Bucle del juego
     var boards = [];
@@ -102,70 +86,7 @@ var Game = new function() {
     // Son capas: se dibujan de menor num a mayor
     // Cada capa tiene que tener en su interfaz step() y draw()
     this.setBoard = function(num,board) { boards[num] = board; };
-
-
-    // Configuración para móviles
-    this.setupMobile = function() {
-	var container = document.getElementById("container"),
-          // Comprobar si el browser soporta eventos táctiles
-          hasTouch =  !!('ontouchstart' in window),
-	  // Ancho y alto de la ventana del browser
-          w = window.innerWidth, h = window.innerHeight;
-
-	if(hasTouch) { this.mobile = true; }
-
-	// Salir si la pantalla es mayor que cierto tamaño máximo o si no
-	// tiene soporte para eventos táctiles
-	if(screen.width >= 1280 || !hasTouch) { return false; }
-
-	// Comprobar si el usuario está en modo landscape
-	// Si no lo está, pedirle que rote el dispositivo 
-	if(w > h) {
-	    alert("Please rotate the device and then click OK");
-	    w = window.innerWidth; h = window.innerHeight;
-	}
-
-	// Cambiar el tamaño del div container para que sea mayor que
-	// la página para permitir eliminar la barra de dirección del
-	// navegador
-	container.style.height = h*2 + "px";
-
-	// Desplazar la ventana mínimamente para forzar a que desaparezca
-	// la barra de dirección del navegador
-	window.scrollTo(0,1);
-
-	// Cambiar el tamaño del contenedor para que sea el de la ventana
-	h = window.innerHeight + 2;
-	container.style.height = h + "px";
-	container.style.width = w + "px";
-	container.style.padding = 0;
-
-	//  Comprobar si estamos en un dispositivo táctil grande (tableta)
-	if(h >= this.canvas.height * 1.75 || w >= this.canvas.height * 1.75) {
-	    // Si grande, tamaño del canvas = mitad del tamaño de la ventana
-            // Así se mejora el rendimiento al tener un canvas más pequeño
-	    this.canvasMultiplier = 2;
-	    this.canvas.width = w / 2;
-	    this.canvas.height = h / 2;
-	    this.canvas.style.width = w + "px";
-	    this.canvas.style.height = h + "px";
-	} else {
-            //  Si no grande, tamaño del canvas = tamaño de la ventana
-	    this.canvas.width = w;
-	    this.canvas.height = h;
-	}
-
-	//  Poner el canvas en una posición absoluta en la esquina
-	//  superior izquierda de la ventana
-	this.canvas.style.position='absolute';
-	this.canvas.style.left="0px";
-	this.canvas.style.top="0px";
-
-    };
-
-
 };
-
 
 // Objeto singleton SpriteSheet: se guarda una unica instancia del
 // constructor anónimo en el objeto SpriteSheet
@@ -236,7 +157,6 @@ var TitleScreen = function TitleScreen(title,subtitle,callback) {
 	ctx.fillText(subtitle,Game.width/2,Game.height/2 + 40);
     };
 };
-
 
 
 // GameBoard implementa un tablero de juego que gestiona la
@@ -500,8 +420,10 @@ Level.prototype.draw = function(ctx) { };
 
 
 
-// Clase para controlar el juego mediante botones en la pantalla
-// táctil de un móvil o una tableta
+// Constructor para controlar el juego mediante botones en la pantalla
+// táctil de un móvil o una tableta.
+// Los objetos creados con este constructor implementan la interfaz 
+//  .step() y .draw() para poder usarlo como un objeto
 var TouchControls = function() {
 
     
@@ -516,10 +438,10 @@ var TouchControls = function() {
     // Ancho de cada columna
     var blockWidth = unitWidth-gutterWidth;
 
-    // Dibuja un rectángulo con texto dentro. Usado para representar
+    // Dibuja un rectángulo con un carácter dentro. Usado para representar
     // los botones. 
     // Los botones de las flechas izquierda y derecha usan los
-    // caracteres Univode UTF-8 \u25C0 y \u25B6 respectivamente, que
+    // caracteres Unicode UTF-8 \u25C0 y \u25B6 respectivamente, que
     // corresponden a sendos triángulos
     this.drawSquare = function(ctx,x,y,txt,on) {
 	// Usamos un nivel de opacidad del fondo (globalAlpha)
@@ -542,6 +464,26 @@ var TouchControls = function() {
                      y+3*blockWidth/4+5);
     };
 
+	this.drawRectangle = function(ctx,x,y,txt,on) {
+	// Usamos un nivel de opacidad del fondo (globalAlpha)
+	// diferente para que cambie la apariencia del botón en
+	// función de si está presionado (opaco) o no (más
+	// transparente)
+	ctx.globalAlpha = on ? 0.9 : 0.6;
+
+	ctx.fillStyle =  "#CCC";
+	ctx.fillRect(x,y,2*blockWidth,blockWidth);
+
+	ctx.fillStyle = "#FFF";
+	ctx.textAlign = "center";
+	ctx.globalAlpha = 1.0;
+	ctx.font = "bold " + (3*unitWidth/4) + "px arial";
+
+
+	ctx.fillText(txt, 
+                     x+blockWidth,
+                     y+3*blockWidth/4+5);
+    };
 
 
     this.draw = function(ctx) {
@@ -555,13 +497,16 @@ var TouchControls = function() {
 	this.drawSquare(ctx,gutterWidth,yLoc,"\u25C0", Game.keys['left']);
 	this.drawSquare(ctx,unitWidth + gutterWidth,yLoc,"\u25B6", Game.keys['right']);
 	this.drawSquare(ctx,4*unitWidth,yLoc,"A",Game.keys['fire']);
+	this.drawRectangle(ctx,2*unitWidth + gutterWidth,yLoc,"B",Game.keys['leftFireBall'] || Game.keys['rigthFireBall'] );
 
 	// Recupera el estado salvado al principio del método
 	ctx.restore();
     };
 
     this.step = function(dt) { };
+	var eBall = {id: undefined , pos:{x:0,y:0}};
 
+    // Manejador para eventos de la pantalla táctil
     this.trackTouch = function(e) {
 	var touch, x;
 	
@@ -573,13 +518,18 @@ var TouchControls = function() {
 	// correspondientes a flecha izquierda y flecha derecha
 	Game.keys['left'] = false;
 	Game.keys['right'] = false;
+	Game.keys["leftFireBall"] = false;
+	Game.keys["rightFireBall"] = false;
+
+
 	for(var i=0;i<e.targetTouches.length;i++) {
-	    // Independientemente de dónde se tocó originalmente, nos
-	    // fijamos en todos los dedos y si hay alguno sobre los
-	    // botones de dirección, lo consideramos activado. Esto
-	    // permite desplazar los dedos sin levantarlos, y que se
-	    // generen eventos cuando pasan por encima de los botones
-	    // de dirección
+	    // Independientemente de dónde se tocó originalmente, y
+	    // del tipo de evento, nos fijamos en todos los dedos
+	    // (targetTouches), y si hay alguno sobre los botones de
+	    // dirección, lo consideramos activado. Esto permite
+	    // desplazar los dedos sin levantarlos, y que se generen
+	    // eventos cuando pasan por encima de los botones de
+	    // dirección
 	    touch = e.targetTouches[i];
 
 	    // Al fijarnos sólo en las coordenadas X hacemos que toda
@@ -591,14 +541,40 @@ var TouchControls = function() {
 	    if(x > unitWidth && x < 2*unitWidth) {
 		Game.keys['right'] = true;
 	    } 
+		if (e.type == "touchstart") {
+			if (x > 2* unitWidth && x < 4*unitWidth) {
+				eBall.id = touch.identifier;
+				eBall.pos.x = touch.pageX;
+				eBall.pos.y = touch.pageY;
+			};
+		};
+
+
+		if (e.type == "touchmove"){
+			if (eBall.id == touch.identifier){
+				if (touch.pageX < eBall.pos.x && touch.pageY < eBall.pos.y) {
+					Game.keys["leftFireBall"] = true;
+				}else if (touch.pageX > eBall.pos.x && touch.pageY < eBall.pos.y) {
+					Game.keys ["rightFireBall"] = true;
+				};
+			eBall.id = undefined;
+			eBall.pos.x = 0;
+			eBall.pos.y = 0;
+			
+
+			};
+
+		};
+		
+		
 	}
 
 	// Detección de eventos sobre franja de la derecha: disparo
 	if(e.type == 'touchstart' || e.type == 'touchend') {
 	    for(i=0;i<e.changedTouches.length;i++) {
 		// Sólo consideramos dedos que han intervenido en el
-		// evento actual (touchstart o touchend según
-		// comprobamos en el anterior if)
+		// evento actual (touchstart o touchend), por lo que 
+                // miramos en changedTouches
 		touch = e.changedTouches[i];
 
 		// Al fijarnos sólo en las coordenadas X hacemos que toda
@@ -624,7 +600,6 @@ var TouchControls = function() {
     // modificado PlayerShip para que tenga en cuenta este
     // offset.
     Game.playerOffset = unitWidth + 20;
-
 };
 
 
