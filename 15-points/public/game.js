@@ -253,6 +253,33 @@ PlayerMissile.prototype.step = function(dt)  {
     }
 };
 
+// lado debe ser 1 si se pulsa B y -1 si se pulsa N
+var FireBall = function (x,y, lado){
+	this.setup('fireball', {vx: -100*lado, vy: -850, damage: 100,frame:3})
+	this.x = x - this.w/2; 
+   this.y = y - this.h; 
+
+};
+
+FireBall.prototype = new Sprite();
+FireBall.prototype.type = OBJECT_PLAYER_PROJECTILE;
+
+FireBall.prototype.step = function(dt)  {
+	 this.x += this.vx * dt;
+	 this.y += this.vy * dt;
+	 this.vy += 50;
+	 
+	 var collision = this.board.collide(this,OBJECT_ENEMY);
+    if(collision) {
+	collision.hit(this.damage);
+	
+    } else if(this.y > Game.height || 
+       this.y < -this.h||
+       this.x < -this.w||
+       this.x > Game.width) {
+	this.board.remove(this);
+    }
+};
 
 // Constructor para las naves enemigas. Un enemigo se define mediante
 // un conjunto de propiedades provenientes de 3 sitios distintos, que
