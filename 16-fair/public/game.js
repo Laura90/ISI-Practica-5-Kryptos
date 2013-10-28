@@ -316,7 +316,7 @@ PlayerMissile.prototype.step = function(dt)  {
     if(collision) {
 	collision.hit(this.damage);
 	this.board.remove(this);
-	} else if (collisionProjectile) {
+    } else if (collisionProjectile) {
 	this.board.remove(this);
 	this.board.remove(collisionProjectile);
     } else if(this.y < -this.h) { 
@@ -342,13 +342,12 @@ FireBall.prototype.step = function(dt)  {
 	 
 	 var collision = this.board.collide(this,OBJECT_ENEMY);
 	 var collisionProjectile = this.board.collide(this,OBJECT_ENEMY_PROJECTILE);
-
     if(collision) {
 	collision.hit(this.damage);
 	} else if (collisionProjectile) {
 	this.board.remove(this);
 	this.board.remove(collisionProjectile);
-	} else if(this.y > Game.height || 
+    } else if(this.y > Game.height || 
        this.y < -this.h||
        this.x < -this.w||
        this.x > Game.width) {
