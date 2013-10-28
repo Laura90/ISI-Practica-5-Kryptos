@@ -103,20 +103,20 @@ describe("Game singleton", function(){
 
 
     it("Game.loop()", function(){
-	// Queremos espiar loop, pero necesitamos que se ejecute loop,
+        // Queremos espiar loop, pero necesitamos que se ejecute loop,
         // pues necesitamos en este test que se produzcan sus
         // efectos. Por ello llamamos a .andCallThrough()
-	spyOn(Game, "loop").andCallThrough();
-	
-	Game.initialize("game",sprites,startGame);	
+        spyOn(Game, "loop").andCallThrough();
+        
+        Game.initialize("game",sprites,startGame);        
 
-	// Prueba a reducir el número de milisegundos de espera, hasta
-	// que falle
-	waits(300)
+        // Prueba a reducir el número de milisegundos de espera, hasta
+        // que falle
+        waits(350);
 
-	runs(function(){
-	    expect(Game.loop.calls.length).toBeGreaterThan(10);
-	});
+        runs(function(){
+         expect(Game.loop.calls.length).toBeGreaterThan(10);
+        });
     });
 
 
