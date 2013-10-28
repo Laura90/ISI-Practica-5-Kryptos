@@ -18,6 +18,16 @@ describe("Clase PlayerShip", function(){
         expect(ctx).toBeDefined();
         SpriteSheetOrig = SpriteSheet;
         GameOrig = Game;
+         SpriteSheet = {
+				draw : function () {},
+				map : {
+					ship: { sx: 0, sy: 0, w: 37, h: 42, frames: 1 },
+    				missile: { sx: 0, sy: 30, w: 2, h: 10, frames: 1 },
+    				enemy_purple: { sx: 37, sy: 0, w: 42, h: 43, frames: 1 },
+    				explosion: { sx: 0, sy: 64, w: 64, h: 64, frames: 12 },
+    				fireball: { sx: 0, sy: 64, w: 64, h: 64, frames: 12 }
+    		}
+		}
 
     });
     
@@ -35,7 +45,7 @@ describe("Clase PlayerShip", function(){
 
         // Necesitamos tener Game.width y Game.height para que el
         // constructor de PlayerShip pueda inicializar x e y
-        Game = {width: 320, height: 480};
+        Game = {width: 320, height: 480, playerOffset: 10};
 
         var miNave = new PlayerShip();
 

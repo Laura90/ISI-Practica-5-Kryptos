@@ -36,7 +36,7 @@ describe("class PuntuacionSpec", function(){
        });
 
 	it("Puntos al matar un enemigo()",function(){
-		Game={width: 320, height:480};
+		//Game={width: 320, height:480};
 		var enem =new Enemy({ x: 100, y: -50, sprite: 'enemy_purple', B: 100, C: 2 , E: 100, health:10 });
 		var puntos = new GamePoints();
 		enem.board= {add: function(obj) {}, remove: function () {return true}};
@@ -47,7 +47,7 @@ describe("class PuntuacionSpec", function(){
 	});
 	
 	it ("Puntos del misil al matar un enemigo()", function(){
-		Game={width: 320, height:480};
+
 		var enem =new Enemy({ x: 100, y: -50, sprite: 'enemy_purple', B: 100, C: 2 , E: 100, health:10 });
 		var missile = new PlayerMissile(100,100);
 		var puntos =new GamePoints();
@@ -56,14 +56,14 @@ describe("class PuntuacionSpec", function(){
 		gameboard.add(missile);
         gameboard.add(enem);
         expect(Game.points).toBe(0);
-        gameboard.step(0.0000001);
+        gameboard.step(0.01);
         enem.hit(10);
         expect(Game.points).toBe(100);
 
 	});
 	
 	it("reinicio del contador al perder()", function(){
-		Game = {setBoard: function(){}};
+
 		var puntos =new GamePoints();
 		Game.points=1000;
 		expect(Game.points).toBe(1000);
@@ -74,8 +74,20 @@ describe("class PuntuacionSpec", function(){
 	
 	});
 	
+	it("Puntos al pasar de nivel()", function(){
+
+		var puntos =new GamePoints();
+		Game.points=1000;
+		expect(Game.points).toBe(1000);
+		newLevel();
+		playGame();
+		expect(Game.points).toBe(1000);
+		
+	
+	});
+	
 	it("bola de fuego con enemigo()", function(){
-		Game={width: 320, height:480};
+
 		var enem =new Enemy({ x: 100, y: -50, sprite: 'enemy_purple', B: 100, C: 2 , E: 100, health:10 });
 		var fireball = new FireBall(100,100, 5);
 		var puntos =new GamePoints();
@@ -84,7 +96,7 @@ describe("class PuntuacionSpec", function(){
 		gameboard.add(fireball);
         gameboard.add(enem);
         expect(Game.points).toBe(0);
-        gameboard.step(0.0000001);
+        gameboard.step(0.01);
         enem.hit(10);
         expect(Game.points).toBe(100);
 

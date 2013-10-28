@@ -1,0 +1,76 @@
+¿Cómo usar este material?:
+
+- Ejecuta el juego finalizado: http://cykod.github.io/AlienInvasion/
+
+- Ejecuta el prototipo. Para poder ejecutar en el móvil este prototipo
+  hay que arrancar el servidor que hemos incluído siguiendo las
+  instrucciones del fichero LEEME que hay en este directorio. El
+  código fuente del prototipo está en el directorio public/
+  
+- A continuación exponemos los requisitos y la especificación de este
+  prototipo.
+
+  Requisitos:
+
+  El objetivo de este prototipo es que los enemigos puedan disparar
+  misiles a la nave del jugador.
+
+  Cada tipo de enemigo disparará de vez en cuando, de manera
+  aleatoria. Según el enemigo, podrá enviar 1 o 2 misiles cada vez que
+  dispare.
+
+  Especificación
+
+  Siguiendo el ejemplo de PlayerMissile, se creará el constructor
+  EnemyMissile. 
+
+
+EJERCICIOS
+
+1. Comprueba el funcionamiento de este prototipo. Para poder ejecutar
+   en el móvil el juego hay que arrancar el servidor que hemos
+   incluído siguiendo las instrucciones del fichero LEEME que hay en
+   este directorio. El código fuente del prototipo está en el
+   directorio public/
+
+
+2. Estudia los cambios que se han realizado en el código para
+   implementar los niveles de juego en este prototipo:
+
+   En game.js se ha añadido el constructor EnemyMissile()
+
+   Es muy parecido a PlayerMissile, diferenciándose en lo siguiente:
+     a) la dirección vertical es la contraria
+     b) tiene otro tipo
+     c) tiene un tipo de objeto diferente con el que colisionar
+     d) se hace una comprobación distinta para ver si está fuera de la pantalla
+
+
+   El sprite enemy_missile se define en sprites, en game.js
+
+   Modificaciones de Enemy:
+
+     Se añaden a Enemy.prototype.baseParameters las propiedades reload
+     y reloadTime. A algunas definiciones de enemigos en enemies
+     (game.js) se les añaden propiedads firePercentage y missiles. Los
+     enemigos que no tienen estos valores utilizan como valores por
+     defecto, respectivamente, 0.01 y 1. El número firePercentage es
+     muy bajo pues a step() se le llama muchas veces (cada 30ms).
+
+
+     En step() se ha añadido el código para disparar. Se calcula un
+     número aleatorio y si es menor que firePercentage se disparan, 1
+     o 2 misiles, según el tipo de enemigo.
+
+
+3. Haz que las bola de fuego puedan ser destruidas por los misiles de
+   las naves enemigas.
+
+4. Añade en un fichero de pruebas EnemyMissileSpec.js pruebas
+   unitarias comprobar el funcionamiento correcto de los misiles
+   disparados por las naves enemigas. 
+
+5. Añade al fichero EnemyMissileSpec.js pruebas de integración que
+   comprueben que el misil de un enemigo elimina tanto bolas de fuego
+   como la nave del jugador.
+
