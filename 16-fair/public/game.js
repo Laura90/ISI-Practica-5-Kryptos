@@ -312,9 +312,13 @@ PlayerMissile.prototype.type = OBJECT_PLAYER_PROJECTILE;
 PlayerMissile.prototype.step = function(dt)  {
     this.y += this.vy * dt;
     var collision = this.board.collide(this,OBJECT_ENEMY);
+    var collisionProjectile = this.board.collide(this,OBJECT_ENEMY_PROJECTILE);
     if(collision) {
 	collision.hit(this.damage);
 	this.board.remove(this);
+	} else if (collisionProjectile) {
+	this.board.remove(this);
+	this.board.remove(collisionProjectile);
     } else if(this.y < -this.h) { 
 	this.board.remove(this); 
     }
@@ -337,9 +341,13 @@ FireBall.prototype.step = function(dt)  {
 	 this.vy += 50;
 	 
 	 var collision = this.board.collide(this,OBJECT_ENEMY);
+	 var collisionProjectile = this.board.collide(this,OBJECT_ENEMY_PROJECTILE);
 
     if(collision) {
 	collision.hit(this.damage);
+	} else if (collisionProjectile) {
+	this.board.remove(this);
+	this.board.remove(collisionProjectile);
 	} else if(this.y > Game.height || 
        this.y < -this.h||
        this.x < -this.w||
