@@ -47,9 +47,14 @@ describe("Clase EnemyMissile", function(){
         GameOrig = Game;
         
         SpriteSheet = {
-			draw : function () {},
-			map : {enemy_missile: { sx: 9, sy: 42, w: 3, h: 20, frame: 1 }}
-		}
+				draw : function () {},
+				map : {
+					ship: { sx: 0, sy: 0, w: 37, h: 42, frames: 1 },
+    				explosion: { sx: 0, sy: 64, w: 64, h: 64, frames: 12 },
+    				fireball: { sx: 0, sy: 64, w: 64, h: 64, frames: 12 },
+    				enemy_missile: { sx: 9, sy: 42, w: 3, h: 20, frame: 1 }
+    			}
+			}	
 	});
 	
 	afterEach(function() {
@@ -109,6 +114,30 @@ describe("Clase EnemyMissile", function(){
 
 	});
 	
+	it ("Eliminar bolas de fuego con misil enemigo" , function() {
+	
+		
+		newboard = new GameBoard();
+		
+		fireb = new FireBall(100,100,1);
+		misil_enemigo = new EnemyMissile(68,46);
+		
+		newboard.add(fireb);
+		newboard.add(misil_enemigo);
+		expect(newboard.objects.length).toBe(2);
+		
+		var collision = newboard.collide(fireb,OBJECT_ENEMY_PROJECTILE);
+		
+		newboard.step(0.01);
+		
+		
+		expect(collision).toBe(misil_enemigo);
+		expect(newboard.objects.length).toBe(0);
+
+	
+	
+	
+	});
 
 
 
