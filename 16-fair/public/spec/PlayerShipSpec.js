@@ -50,7 +50,6 @@ describe("Clase PlayerShip", function(){
         var miNave = new PlayerShip();
 
         miNave.draw();
-        console.log(miNave);
 
         expect(SpriteSheet.draw).toHaveBeenCalled();
          expect(SpriteSheet.draw.calls[0].args[1]).toEqual("ship");

@@ -97,13 +97,15 @@ var level2 = [
     [ 22000,    25000, 300,         'wiggle',   { x: 100 } ]
 ];
 
-var level =  {levels: [level1, level2], now: 0, total: 2};
+var level =  {levels: [level1, level2], now: 0, total: 2, points: 0};
 
 
 
 var playGame = function() {
     var board = new GameBoard();
     board.add(new PlayerShip());
+
+    
 
     // Se un nuevo nivel al tablero de juego, pasando la definición de
     // nivel level1 y la función callback a la que llamar si se ha
@@ -115,6 +117,7 @@ var playGame = function() {
     }
     Game.setBoard(3,board);
     Game.setBoard(5,new GamePoints(0));
+    Game.points = level.points;
 };
 
 
@@ -130,13 +133,17 @@ var winGame = function() {
 // Llamada cuando la nave del jugador ha sido alcanzada, para
 // finalizar el juego
 var loseGame = function() {
+	
+    level.now = 0;
     Game.setBoard(3,new TitleScreen("You lose!", 
                                     "Press fire to play again",
                                     playGame));
+   level.points = 0;
 };
 
 var newLevel = function() {
 	 level.now += 1;
+	 level.points = Game.points;
     Game.setBoard(3,new TitleScreen("Level "+ level.now +" Passed", 
                                     "Press fire to continue",
                                     playGame));
