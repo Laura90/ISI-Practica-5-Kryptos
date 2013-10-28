@@ -138,6 +138,33 @@ describe("Clase EnemyMissile", function(){
 	
 	
 	});
+	
+	it ("Eliminar nave propia con misil enemigo" , function() {
+	
+		
+		newboard = new GameBoard();
+		
+		nave_propia = new PlayerShip();
+		misil_enemigo = new EnemyMissile(141.5,428);
+		
+		newboard.add(nave_propia);
+		newboard.add(misil_enemigo);
+		
+		expect(newboard.objects.length).toBe(2);
+		
+		var collision = newboard.collide(nave_propia,OBJECT_ENEMY_PROJECTILE);
+		
+		newboard.step(0.01);
+		
+		
+		expect(collision).toBe(misil_enemigo);
+		expect(newboard.objects.length).toBe(1);
+		expect(newboard.objects[0].sprite).toBe("explosion")
+
+	
+	
+	
+	});
 
 
 
